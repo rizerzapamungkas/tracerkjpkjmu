@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Tracer Study 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        select {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;
+        }
+        input[type="radio"]:checked + div { border-color: #0f172a; background-color: #f8fafc; }
+        input[type="radio"]:checked + div span.text-lg { color: #0f172a; }
+        .scale-dot:checked + div { background-color: #0f172a; color: white; border-color: #0f172a; transform: scale(1.1); }
+        input[type="radio"].gaji-opt:checked + div { background-color: #0f172a; border-color: #0f172a; color: white; }
+        input[type="radio"].gaji-opt:checked + div span { color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-700 p-8 fade-in my-8" id="main-card">
+        
+        <div class="mb-8 text-center" id="header-area">
+            <div class="flex justify-center items-center gap-6 mb-4">
+                <img src="https://i.imgur.com/7QcgJj0.png" class="h-24 w-auto object-contain">
+                <img src="https://i.imgur.com/UusHb6r.png" class="h-28 w-auto object-contain">
+            </div>
+            
+            <h1 class="text-2xl font-semibold text-slate-800">Tracer KJP & KJMU</h1>
+        </div>
+
+        <div id="step-1" class="space-y-6">
+            <div class="prose prose-sm text-slate-700 leading-relaxed text-justify"><p>Saat ini Dinas Pendidikan DKI Jakarta tengah berencana untuk menyempurnakan program Kartu Jakarta Pintar (KJP) dan Kartu Jakarta Mahasiswa Unggul (KJMU). Oleh karena itu, kami memerlukan umpan balik dari Anda sebagai penerima manfaat maupun sebagai alumni yang pernah memperoleh KJP maupun KJMU.
+
+<br></br>Diperlukan sekitar <b>20 menit</b> untuk mengisi survei ini. Anda diharapkan dapat mengisi survei ini dalam kondisi tenang dan tanpa gangguan. Dalam survei ini, identitas dan informasi Anda akan dirahasiakan. Seluruh informasi yang Anda isikan hanya digunakan untuk kepentingan <b>evaluasi program KJP dan KJMU</b>. Informasi Anda akan sangat bermanfaat untuk penyempurnaan KJP dan KJMU sehingga implementasinya di tahun-tahun mendatang dapat memberikan akses pendidikan yang lebih baik bagi anak-anak bangsa. 
+
+<br></br>Survei ini bersifat <b>sukarela</b>. Di bawah ini, Anda akan mendapatkan pertanyaan terkait kesediaan Anda. Bila Anda memilih <b>bersedia</b>, maka Anda akan mendapatkan sejumlah pertanyaan untuk diisi selama 20 menit. Akan tetapi, bila Anda memilih <b>tidak bersedia</b>, maka survei akan langsung berakhir.
+
+Terima kasih,
+Dinas Pendidikan DKI Jakarta</p></div>
+            <div class="text-center pt-2">
+                <p class="text-base font-medium text-slate-800 mb-4">Apakah Anda bersedia untuk melakukan pengisian survei ini?</p>
+                <div class="flex gap-3">
+                    <button onclick="handleConsent(true)" class="flex-1 bg-slate-900 text-white text-lg py-2.5 rounded-lg hover:bg-slate-800 transition-colors">Ya, Saya Bersedia</button>
+                    <button onclick="handleConsent(false)" class="flex-1 bg-white border border-slate-700 text-slate-700 text-lg py-2.5 rounded-lg hover:bg-slate-50 transition-colors">Saya tidak bersedia</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="step-2" class="hidden space-y-5 fade-in">
+            <div class="text-center mb-6"><h2 class="text-lg text-lg text-slate-800">Verifikasi Nomor Induk Kependudukan</h2></div>
+            <div>
+                <input type="number" id="nik" placeholder="Masukkan 16 Digit NIK..." class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:ring-2 focus:ring-slate-900 text-slate-800">
+                <p id="error-msg" class="hidden text-red-500 text-lg mt-2">NIK tidak terdaftar.</p>
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button onclick="switchStep('step-2', 'step-1')" class="px-4 py-2.5 text-slate-700 text-lg">Kembali</button>
+                <button id="btn-verify" onclick="verifyNIK()" class="flex-1 bg-slate-900 text-white text-lg py-2.5 rounded-lg flex justify-center items-center gap-2">
+                    <span id="btn-text">Cek Data</span>
+                    <svg id="btn-spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="step-3" class="hidden space-y-6 fade-in text-center">
+            <div class="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+            <h2 class="text-xl font-semibold text-slate-800">Verifikasi Berhasil</h2>
+            <p class="text-slate-700 mt-1" id="welcome-msg">Selamat datang</p>
+            <button onclick="startForm()" class="w-full bg-slate-900 text-white text-lg py-3 rounded-lg mt-4">Mulai Isi Kuesioner</button>
+        </div>
+
+        <div id="step-4" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-4"><h2 class="text-lg font-semibold text-slate-800">Latar Belakang Keluarga</h2></div>
+            <div class="space-y-4">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1">1. Nama Lengkap Siswa / Mahasiswa</label><input type="text" id="input_nama" disabled class="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-50 text-slate-700"></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1">2. Apa pendidikan tertinggi yang ditamatkan <span class="font-bold">ibu</span> Anda?</label><select id="pendidikan_ibu" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" selected disabled>Pilih...</option><option value="SD/Sederajat">SD/Sederajat</option><option value="SMP/Sederajat">SMP/Sederajat</option><option value="SMA/Sederajat">SMA/Sederajat</option><option value="D1">D1</option><option value="D2">D2</option><option value="D3">D3</option><option value="D4/S1">D4/S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="Tidak Sekolah">Tidak Sekolah</option></select></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1">3. Apa pendidikan tertinggi yang ditamatkan <span class="font-bold">ayah</span> Anda?</label><select id="pendidikan_ayah" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" selected disabled>Pilih...</option><option value="SD/Sederajat">SD/Sederajat</option><option value="SMP/Sederajat">SMP/Sederajat</option><option value="SMA/Sederajat">SMA/Sederajat</option><option value="D1">D1</option><option value="D2">D2</option><option value="D3">D3</option><option value="D4/S1">D4/S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="Tidak Sekolah">Tidak Sekolah</option></select></div>
+                <p id="error-s1" class="hidden text-red-500 text-lg">Lengkapi data pendidikan.</p>
+            </div>
+            <button onclick="nextTo('step-4', 'step-5', ['pendidikan_ibu', 'pendidikan_ayah'], 'error-s1')" class="w-full bg-slate-900 text-white py-3 rounded-lg text-lg">Lanjut</button>
+        </div>
+
+        <div id="step-5" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-6"><h2 class="text-lg font-semibold text-slate-800">Riwayat Kartu Jakarta Pintar (KJP)</h2></div>
+            <div class="text-center space-y-6">
+                <label class="block text-base text-lg text-slate-800">Apakah Anda <b>pernah</b> atau <b>sedang</b> menerima <b>KJP</b>?</label>
+                <div class="flex gap-4">
+                    <button onclick="handleKJP('Ya')" class="flex-1 py-4 border-2 border-slate-700 rounded-xl hover:border-slate-900 text-lg text-slate-700 transition-colors">Ya</button>
+                    <button onclick="handleKJP('Tidak')" class="flex-1 py-4 border-2 border-slate-700 rounded-xl hover:border-slate-900 text-lg text-slate-700 transition-colors">Tidak</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="step-6" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-4"><h2 class="text-lg font-semibold text-slate-800">Detail Penerimaan Kartu Jakarta Pintar (KJP)</h2></div>
+            <div class="space-y-6">
+                <div><label class="block text-lg text-lg text-slate-700 mb-2">1. Pada <b>tahun berapa saja</b> Anda memperoleh KJP?</label><p class="text-lg text-slate-700 mb-3 italic">(<b>Silakan memilih lebih dari satu</b> bila Anda memperoleh KJP lebih dari satu tahun)</p><div class="grid grid-cols-4 gap-2" id="grid-tahun-kjp"></div></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1.5">2. Apa <b>jenjang/jalur pendidikan</b> Anda saat memperoleh KJP?</label><select id="kjp_jenjang" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" disabled selected>Pilih...</option><option value="SMA">SMA</option><option value="SMK">SMK</option><option value="Kesetaraan">Kesetaraan</option></select></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1.5">3. Pada tahun berapa Anda <b>memulai</b> pendidikan di jenjang SMA/sederajat tersebut?</label><select id="kjp_mulai" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" disabled selected>Pilih...</option><option value="Sebelum 2013">Sebelum 2013</option></select></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-700 mb-1.5">4. Pada tahun berapa Anda <b>lulus</b> dari jenjang SMA/sederajat tersebut?</label><p class="text-lg text-slate-700 mb-3 italic">(Bila Anda <b>belum lulus</b>, silakan memilih <b>Setelah 2025</b>)</p><select id="kjp_lulus" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" disabled selected>Pilih...</option><option value="Setelah 2025">Setelah 2025</option></select></div>
+                <p id="error-section-kjp" class="hidden text-red-500 text-lg mt-2">Pilih minimal 1 tahun dan lengkapi form.</p>
+            </div>
+            <div class="pt-6 border-t border-slate-700 flex gap-3">
+                <button onclick="switchStep('step-6', 'step-5')" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button onclick="nextAfterKJP()" class="flex-1 bg-slate-900 text-white text-lg py-3 rounded-lg">Lanjut</button>
+            </div>
+        </div>
+
+        <div id="step-7" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-6"><h2 class="text-lg font-semibold text-slate-800">Riwayat Kartu Jakarta Mahasiswa Unggul (KJMU)</h2></div>
+            <div class="text-center space-y-6">
+                <label class="block text-base text-lg text-slate-800">Apakah Anda <b>pernah</b> atau <b>sedang</b> menerima <b>KJMU</b>?</label>
+                <div class="flex gap-4">
+                    <button onclick="handleKJMU('Ya')" class="flex-1 py-4 border-2 border-slate-700 rounded-xl hover:border-slate-900 text-lg text-slate-700 transition-colors">Ya</button>
+                    <button onclick="handleKJMU('Tidak')" class="flex-1 py-4 border-2 border-slate-700 rounded-xl hover:border-slate-900 text-lg text-slate-700 transition-colors">Tidak</button>
+                </div>
+                
+                <div id="error-kjmu-validation" class="hidden flex-col items-center gap-3 mt-4 p-4 bg-red-50 rounded-xl border border-red-100 fade-in">
+                    <p class="text-red-600 text-lg text-lg flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        (Harus pilih antara KJP/KJMU/Keduanya)
+                    </p>
+                    <button onclick="backToKJPFromError()" class="px-4 py-2 bg-white border border-slate-700 text-slate-700 text-lg text-lg rounded-lg hover:bg-slate-50 transition-colors w-full sm:w-auto">
+                        Kembali ke pertanyaan KJP
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step-8" class="hidden space-y-6 fade-in text-center py-8"><h2 class="text-xl text-lg text-slate-800">Form KJMU</h2><p class="text-slate-700">(Placeholder Cabang KJMU)</p></div>
+
+        <div id="step-9" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-6"><h2 class="text-lg font-semibold text-slate-800">Pekerjaan</h2></div>
+            <div class="space-y-4">
+                <label class="block text-lg text-lg text-slate-800 leading-relaxed">1.Kapan Anda <span class="font-bold">pertama kali bekerja</span> secara profesional?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Pertama kali bekerja = pekerjaan pertama setelah Anda <b>lulus</b> dari jenjang pendidikan tertinggi (<b>SMA/SMK/sederajat untuk penerima KJP</b> atau <b>D3 dan S1 untuk penerima KJMU</b>)</p>
+                <select id="tahun_kerja" class="w-full px-4 py-3 rounded-lg border border-slate-700 bg-white"><option value="" disabled selected>Pilih tahun...</option><option value="Belum">Belum pernah bekerja / sedang tidak bekerja</option></select>
+                <p id="error-pekerjaan" class="hidden text-red-500 text-lg">Mohon pilih tahun.</p>
+            </div>
+            <div class="pt-4 flex gap-3">
+                <button onclick="switchStep('step-9', 'step-7'); document.getElementById('error-kjmu-validation').classList.replace('flex', 'hidden');" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button onclick="prosesPekerjaan()" class="flex-1 bg-slate-900 text-white text-lg py-3 rounded-lg">Lanjut</button>
+            </div>
+        </div>
+
+        <div id="step-10" class="hidden space-y-8 fade-in">
+            <div class="border-b border-slate-700 pb-4"><h2 class="text-lg font-semibold text-slate-800">Detail Pekerjaan Pertama</h2></div>
+            
+            <div class="space-y-2"><label class="block text-lg text-lg text-slate-800">1. Di sektor mana Anda <b>pertama kali bekerja</b> secara profesional pada tahun tersebut?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Pertama kali bekerja = pekerjaan pertama setelah Anda <b>lulus</b> dari jenjang pendidikan tertinggi (<b>SMA/SMK/sederajat untuk penerima KJP</b> atau <b>D3 dan S1 untuk penerima KJMU</b>)</p><select id="sektor_kerja" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" disabled selected>Pilih Sektor...</option><option value="Placeholder Kerja 01">Placeholder Kerja 01</option><option value="Placeholder Kerja 02">Placeholder Kerja 02</option><option value="Placeholder Kerja 03">Placeholder Kerja 03</option><option value="Lainnya">Lainnya</option></select></div>
+            <hr class="border-slate-700">
+            <div class="space-y-3">
+                <label class="block text-lg text-lg text-slate-800">2. Berapa <b>penghasilan bersih pertama</b> Anda setiap bulannya saat pertama kali bekerja di sektor tersebut?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Penghasilan bersih = sudah dipotong pajak dan tunjangan</b></p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji" value="<5jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&lt; 5 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji" value="5-10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">5 - 10 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji" value=">10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&gt; 10 Juta</span></div></label>
+                </div>
+            </div>
+            <hr class="border-slate-700">
+            <div class="space-y-4">
+                <label class="block text-lg text-lg text-slate-800">3. Seberapa relevan <b>pekerjaan pertama</b> Anda dengan ilmu yang Anda pelajari di <b>jenjang pendidikan tertinggi</b>* yang Anda tamatkan?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Jenjang pendidikan tertinggi yang ditamatkan adalah <b>SMA/SMK/sederajat bagi penerima KJP</b> atau <b>D3 dan S1 bagi penerima KJMU</b></p>
+                <div class="flex justify-between items-center max-w-[280px] mx-auto relative mt-2 mb-6">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-700 -z-10 transform -translate-y-1/2"></div>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan" value="1" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            1
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan" value="2" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            2
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan" value="3" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            3
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan" value="4" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            4
+                        </div>
+                    </label>
+                </div>
+                <div class="flex justify-between text-lg text-slate-700 text-lg px-2"><span>Sangat Tidak Relevan</span><span>Sangat Relevan</span></div>
+            </div>
+            <hr class="border-slate-700">
+            <div class="space-y-3">
+                <label class="block text-lg text-lg text-slate-800">4. Apakah <b>saat ini Anda masih bekerja di sektor yang sama</b> dengan pekerjaan pertama tersebut?</label>
+                <div class="space-y-2">
+                    <label class="block cursor-pointer"><input type="radio" name="statuskerja_saatini" value="Sudah tidak kerja" class="peer sr-only gaji-opt"><div class="p-3 border border-slate-700 rounded-lg text-lg text-slate-700 text-lg">Sudah tidak dan saat ini belum bekerja kembali</div></label>
+                    <label class="block cursor-pointer"><input type="radio" name="statuskerja_saatini" value="Sudah beda sektor" class="peer sr-only gaji-opt"><div class="p-3 border border-slate-700 rounded-lg text-lg text-slate-700 text-lg">Sudah tidak, karena sudah bekerja di sektor berbeda</div></label>
+                    <label class="block cursor-pointer"><input type="radio" name="statuskerja_saatini" value="Masih sama" class="peer sr-only gaji-opt"><div class="p-3 border border-slate-700 rounded-lg text-lg text-slate-700 text-lg">Masih sama</div></label>
+                </div>
+            </div>
+
+            <p id="error-detail-pekerjaan" class="hidden text-red-500 text-lg text-center">Mohon lengkapi semua isian.</p>
+
+            <div class="pt-6 border-t border-slate-700 flex gap-3">
+                <button onclick="switchStep('step-10', 'step-9')" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button onclick="simpanDetailPekerjaan()" class="flex-1 bg-slate-900 text-white text-lg py-3 rounded-lg">Lanjut</button>
+            </div>
+        </div>
+
+        <div id="step-11a" class="hidden space-y-8 fade-in">
+            <div class="border-b border-slate-700 pb-4">
+                <h2 class="text-lg font-semibold text-slate-800">Pekerjaan Saat Ini</h2>
+                <p class="text-lg text-slate-700 mt-1">Karena Anda pindah sektor, lengkapi informasi terbaru Anda.</p>
+            </div>
+            
+            <div class="space-y-2">
+                <label class="block text-lg text-lg text-slate-800">1. Pada <b>pekerjaan saat ini</b>, di sektor mana Anda bekerja secara profesional?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b></p>
+                <select id="sektor_baru" class="w-full px-4 py-3 rounded-lg border border-slate-700"><option value="" disabled selected>Pilih Sektor...</option><option value="Placeholder Kerja 01">Placeholder Kerja 01</option><option value="Placeholder Kerja 02">Placeholder Kerja 02</option><option value="Placeholder Kerja 03">Placeholder Kerja 03</option><option value="Lainnya">Lainnya</option></select>
+            </div>
+            <hr class="border-slate-700">
+            <div class="space-y-3">
+                <label class="block text-lg text-lg text-slate-800">2. Pada <b>pekerjaan saat ini</b>, berapa <b>penghasilan bersih</b> Anda setiap bulannya di sektor tersebut?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Penghasilan bersih = sudah dipotong pajak dan tunjangan</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_baru" value="<5jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&lt; 5 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_baru" value="5-10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">5 - 10 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_baru" value=">10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&gt; 10 Juta</span></div></label>
+                </div>
+            </div>
+            <hr class="border-slate-700">
+            <div class="space-y-4">
+                <label class="block text-lg text-lg text-slate-800">3. Seberapa relevan <b>pekerjaan saat ini</b> dengan ilmu yang Anda pelajari di <b>jenjang pendidikan tertinggi</b>* yang Anda tamatkan?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Jenjang pendidikan tertinggi yang ditamatkan adalah <b>SMA/SMK/sederajat bagi penerima KJP</b> atau <b>D3 dan S1 bagi penerima KJMU</b></p>
+                <div class="flex justify-between items-center max-w-[280px] mx-auto relative mt-2 mb-6">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-700 -z-10 transform -translate-y-1/2"></div>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan_baru" value="1" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            1
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan_baru" value="2" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            2
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan_baru" value="3" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            3
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group flex flex-col items-center gap-2">
+                        <input type="radio" name="relevan_baru" value="4" class="peer sr-only scale-dot">
+                        <div class="w-10 h-10 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center font-semibold text-slate-700 peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all">
+                            4
+                        </div>
+                    </label>
+                </div>
+                <div class="flex justify-between text-lg text-slate-700 text-lg px-2"><span>Sangat Tidak Relevan</span><span>Sangat Relevan</span></div>
+            </div>
+
+            <p id="error-pekerjaan-baru" class="hidden text-red-500 text-lg text-center">Mohon lengkapi semua isian.</p>
+
+            <div class="pt-6 border-t border-slate-700 flex gap-3">
+                <button onclick="switchStep('step-11a', 'step-10')" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button onclick="simpanPekerjaanBaru()" class="flex-1 bg-slate-900 text-white text-lg py-3 rounded-lg">Lanjut ke Testimoni</button>
+            </div>
+        </div>
+
+        <div id="step-11b" class="hidden space-y-8 fade-in">
+            <div class="border-b border-slate-700 pb-4">
+                <h2 class="text-lg font-semibold text-slate-800">Penghasilan Saat Ini</h2>
+                <p class="text-lg text-slate-700 mt-1">Karena Anda masih di sektor yang sama, perbarui data penghasilan Anda.</p>
+            </div>
+            
+            <div class="space-y-3">
+                <label class="block text-lg text-lg text-slate-800">1. Pada <b>pekerjaan saat ini</b>, berapa <b>penghasilan bersih</b> Anda setiap bulannya?</label><p class="text-lg text-slate-700 mb-3 italic"><b>Bukan termasuk magang</b><br></br>Penghasilan bersih = sudah dipotong pajak dan tunjangan</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_sama" value="<5jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&lt; 5 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_sama" value="5-10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">5 - 10 Juta</span></div></label>
+                    <label class="flex-1 cursor-pointer"><input type="radio" name="gaji_sama" value=">10jt" class="peer sr-only gaji-opt"><div class="text-center p-3 border border-slate-700 rounded-lg"><span class="text-lg text-slate-700 text-lg">&gt; 10 Juta</span></div></label>
+                </div>
+            </div>
+
+            <p id="error-gaji-sama" class="hidden text-red-500 text-lg text-center">Mohon pilih penghasilan Anda saat ini.</p>
+
+            <div class="pt-6 border-t border-slate-700 flex gap-3">
+                <button onclick="switchStep('step-11b', 'step-10')" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button onclick="simpanGajiSama()" class="flex-1 bg-slate-900 text-white text-lg py-3 rounded-lg">Lanjut ke Testimoni</button>
+            </div>
+        </div>
+
+        <div id="step-12" class="hidden space-y-6 fade-in">
+            <div class="border-b border-slate-700 pb-4 mb-4">
+                <h2 class="text-lg font-semibold text-slate-800">Testimoni Program KJP/KJMU</h2>
+            </div>
+            <div class="space-y-6">
+                <div><label class="block text-lg text-lg text-slate-800 mb-2">1. Silakan ceritakan bagaimana KJP/KJMU meningkatkan motivasi belajar maupun prestasi Anda.</label><p class="text-lg text-slate-700 mb-3 italic"><b>(Maksimal 100 kata)</b></p><textarea id="testi_1" rows="3" oninput="countWords('testi_1', 'count_1')" class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:ring-2 focus:ring-slate-900"></textarea><div class="flex justify-between mt-1"><span id="err_testi_1" class="text-red-500 text-xs hidden">Maksimal 100 kata!</span><span id="count_1" class="text-xs text-slate-700 text-lg ml-auto">0 / 100 kata</span></div></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-800 mb-2">2. Silakan ceritakan bagaimana KJP/KJMU memotivasi Anda untuk melanjutkan pendidikan ke tingkat yang lebih tinggi.</label><p class="text-lg text-slate-700 mb-3 italic"><b>(Maksimal 100 kata)</b><textarea id="testi_2" rows="3" oninput="countWords('testi_2', 'count_2')" class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:ring-2 focus:ring-slate-900"></textarea><div class="flex justify-between mt-1"><span id="err_testi_2" class="text-red-500 text-xs hidden">Maksimal 100 kata!</span><span id="count_2" class="text-xs text-slate-700 text-lg ml-auto">0 / 100 kata</span></div></div>
+                <hr class="border-slate-700">
+                <div><label class="block text-lg text-lg text-slate-800 mb-2">3. Silakan ceritakan bagaimana KJP/KJMU berperan dalam mengubah taraf kehidupan Anda</label><p class="text-lg text-slate-700 mb-3 italic"><b>(Maksimal 100 kata)</b><textarea id="testi_3" rows="3" oninput="countWords('testi_3', 'count_3')" class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:ring-2 focus:ring-slate-900"></textarea><div class="flex justify-between mt-1"><span id="err_testi_3" class="text-red-500 text-xs hidden">Maksimal 100 kata!</span><span id="count_3" class="text-xs text-slate-700 text-lg ml-auto">0 / 100 kata</span></div></div>
+            </div>
+            <p id="error-testimoni" class="hidden text-red-500 text-lg text-center">Isi semua testimoni dengan benar (maks 100 kata).</p>
+            <div class="pt-6 border-t border-slate-700 flex gap-3">
+                <button onclick="backFromTestimoni()" class="px-4 py-3 text-slate-700 text-lg">Kembali</button>
+                <button id="btn-submit" onclick="submitTestimoni()" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-lg py-3 rounded-lg flex justify-center items-center gap-2"><span id="btn-submit-text">Kirim Kuesioner</span><svg id="btn-submit-spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></button>
+            </div>
+        </div>
+
+        <div id="step-end" class="hidden space-y-6 fade-in text-center py-10"><div class="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div><h2 class="text-xl text-lg text-slate-800">Terima Kasih!</h2><p class="text-slate-700 text-lg">Data kuesioner Anda berhasil disimpan.</p></div>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://rmntfufkozcqrbpwlanu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbnRmdWZrb3pjcXJicHdsYW51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MDA2NzAsImV4cCI6MjA5MDA3NjY3MH0.fVdhYyPKMxwQPYuPkh8u5CQcs5xneIn2sgSI4kGovYE';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let surveyData = {
+            nik: "", nama: "", pendidikan_ibu: "", pendidikan_ayah: "",
+            terima_kjp: "", tahun_kjp: [], jenjang_kjp: "", tahun_mulai_sma: "", tahun_lulus_sma: "",
+            terima_kjmu: "", 
+            tahun_kerja_pertama: "", sektor_kerja: "", gaji_pertama: "", relevansi_kerja: "", status_kerja_saat_ini: "",
+            sektor_baru: "", gaji_baru: "", relevansi_baru: "", gaji_sama: ""
+        };
+
+        function generateUIElements() {
+            let kjpCheckHTML = "";
+            for(let y = 2013; y <= 2026; y++) { kjpCheckHTML += `<label class="cursor-pointer"><input type="checkbox" value="${y}" class="peer sr-only kjp-year-cb"><div class="text-center py-2 border border-slate-700 rounded-lg peer-checked:bg-slate-900 peer-checked:text-white text-slate-700 text-lg hover:bg-slate-50">${y}</div></label>`; }
+            document.getElementById('grid-tahun-kjp').innerHTML = kjpCheckHTML;
+            const kjpMulai = document.getElementById('kjp_mulai'); for(let y = 2013; y <= 2025; y++) { kjpMulai.add(new Option(y, y)); }
+            const kjpLulus = document.getElementById('kjp_lulus'); const lastOptLulus = kjpLulus.options[kjpLulus.options.length - 1]; for(let y = 2014; y <= 2025; y++) { kjpLulus.insertBefore(new Option(y, y), lastOptLulus); }
+            const thnKerja = document.getElementById('tahun_kerja'); const lastOptKerja = thnKerja.options[thnKerja.options.length - 1]; for(let y = 2014; y <= 2026; y++) { thnKerja.insertBefore(new Option(y, y), lastOptKerja); }
+        }
+        generateUIElements();
+
+        function switchStep(hideId, showId) { document.getElementById(hideId).classList.add('hidden'); document.getElementById(showId).classList.remove('hidden'); window.scrollTo(0,0); }
+        function handleConsent(w) { w ? switchStep('step-1', 'step-2') : alert('Terima Kasih.'); }
+        
+        async function verifyNIK() {
+            const nikInput = document.getElementById('nik').value.trim();
+            const errorMsg = document.getElementById('error-msg'), btnText = document.getElementById('btn-text'), btnSpinner = document.getElementById('btn-spinner'), btnVerify = document.getElementById('btn-verify');
+            if (!nikInput) { errorMsg.innerText = "NIK tidak boleh kosong."; errorMsg.classList.remove('hidden'); return; }
+            errorMsg.classList.add('hidden'); btnText.innerText = "Memeriksa..."; btnSpinner.classList.remove('hidden'); btnVerify.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient.from('data_nik').select('*').eq('NIK_SISWA', nikInput).maybeSingle(); 
+                if (error || !data) throw new Error();
+                surveyData.nik = data.NIK_SISWA; surveyData.nama = data.NAMA_SISWA;
+                document.getElementById('welcome-msg').innerText = `Selamat datang, ${data.NAMA_SISWA}`;
+                switchStep('step-2', 'step-3');
+            } catch (err) { errorMsg.innerText = "NIK tidak terdaftar."; errorMsg.classList.remove('hidden'); } 
+            finally { btnText.innerText = "Cek Data"; btnSpinner.classList.add('hidden'); btnVerify.disabled = false; }
+        }
+
+        function startForm() { document.getElementById('input_nama').value = surveyData.nama; switchStep('step-3', 'step-4'); }
+        
+        function nextTo(hide, show, reqIds, errId) {
+            let valid = true;
+            reqIds.forEach(id => { if(!document.getElementById(id).value) valid = false; else surveyData[id] = document.getElementById(id).value; });
+            if(!valid) { document.getElementById(errId).classList.remove('hidden'); return; }
+            document.getElementById(errId).classList.add('hidden'); switchStep(hide, show);
+        }
+
+        function handleKJP(status) { 
+            surveyData.terima_kjp = status; 
+            if (status === 'Ya') {
+                // Sembunyikan pesan error kalau sebelumnya muncul lalu milih "Ya" sekarang
+                document.getElementById('error-kjmu-validation').classList.replace('flex', 'hidden');
+                switchStep('step-5', 'step-6'); 
+            } else { 
+                switchStep('step-5', 'step-7'); 
+            } 
+        }
+
+        function nextAfterKJP() {
+            const cb = document.querySelectorAll('.kjp-year-cb:checked'), jenjang = document.getElementById('kjp_jenjang').value, mulai = document.getElementById('kjp_mulai').value, lulus = document.getElementById('kjp_lulus').value;
+            if (cb.length === 0 || !jenjang || !mulai || !lulus) { document.getElementById('error-section-kjp').classList.remove('hidden'); return; }
+            document.getElementById('error-section-kjp').classList.add('hidden');
+            surveyData.tahun_kjp = Array.from(cb).map(c => c.value); surveyData.jenjang_kjp = jenjang; surveyData.tahun_mulai_sma = mulai; surveyData.tahun_lulus_sma = lulus;
+            switchStep('step-6', 'step-7');
+        }
+
+        function handleKJMU(status) { 
+            const errorElement = document.getElementById('error-kjmu-validation');
+
+            // VALIDASI: Cek kalau milih 'Tidak' di KJP dan 'Tidak' juga di KJMU
+            if (status === 'Tidak' && surveyData.terima_kjp === 'Tidak') {
+                errorElement.classList.remove('hidden');
+                errorElement.classList.add('flex');
+                return; // Berhentikan proses ke step selanjutnya
+            }
+
+            // Jika lolos validasi, sembunyikan pesan errornya (berjaga-jaga)
+            errorElement.classList.add('hidden');
+            errorElement.classList.remove('flex');
+
+            surveyData.terima_kjmu = status; 
+            
+            if (status === 'Ya') switchStep('step-7', 'step-8'); 
+            else switchStep('step-7', 'step-9'); 
+        }
+
+        function backToKJPFromError() {
+            document.getElementById('error-kjmu-validation').classList.replace('flex', 'hidden');
+            switchStep('step-7', 'step-5');
+        }
+
+        function prosesPekerjaan() {
+            const tahun = document.getElementById('tahun_kerja').value;
+            if(!tahun) { document.getElementById('error-pekerjaan').classList.remove('hidden'); return; }
+            document.getElementById('error-pekerjaan').classList.add('hidden'); surveyData.tahun_kerja_pertama = tahun;
+            if (tahun === "Belum") switchStep('step-9', 'step-12'); else switchStep('step-9', 'step-10');
+        }
+
+        function simpanDetailPekerjaan() {
+            const sektor = document.getElementById('sektor_kerja').value;
+            const gaji = document.querySelector('input[name="gaji"]:checked')?.value;
+            const relevan = document.querySelector('input[name="relevan"]:checked')?.value;
+            const status = document.querySelector('input[name="statuskerja_saatini"]:checked')?.value;
+            
+            if(!sektor || !gaji || !relevan || !status) { document.getElementById('error-detail-pekerjaan').classList.remove('hidden'); return; }
+            document.getElementById('error-detail-pekerjaan').classList.add('hidden');
+            
+            surveyData.sektor_kerja = sektor; surveyData.gaji_pertama = gaji; surveyData.relevansi_kerja = relevan; surveyData.status_kerja_saat_ini = status;
+
+            if (status === "Sudah tidak kerja") switchStep('step-10', 'step-12'); 
+            else if (status === "Sudah beda sektor") switchStep('step-10', 'step-11a'); 
+            else if (status === "Masih sama") switchStep('step-10', 'step-11b'); 
+        }
+
+        function simpanPekerjaanBaru() {
+            const sektor = document.getElementById('sektor_baru').value;
+            const gaji = document.querySelector('input[name="gaji_baru"]:checked')?.value;
+            const relevan = document.querySelector('input[name="relevan_baru"]:checked')?.value;
+            if(!sektor || !gaji || !relevan) { document.getElementById('error-pekerjaan-baru').classList.remove('hidden'); return; }
+            
+            document.getElementById('error-pekerjaan-baru').classList.add('hidden');
+            surveyData.sektor_baru = sektor; surveyData.gaji_baru = gaji; surveyData.relevansi_baru = relevan;
+            switchStep('step-11a', 'step-12'); 
+        }
+
+        function simpanGajiSama() {
+            const gaji = document.querySelector('input[name="gaji_sama"]:checked')?.value;
+            if(!gaji) { document.getElementById('error-gaji-sama').classList.remove('hidden'); return; }
+            
+            document.getElementById('error-gaji-sama').classList.add('hidden');
+            surveyData.gaji_sama = gaji;
+            switchStep('step-11b', 'step-12'); 
+        }
+
+        function backFromTestimoni() {
+            if (surveyData.tahun_kerja_pertama === "Belum") switchStep('step-12', 'step-9');
+            else if (surveyData.status_kerja_saat_ini === "Sudah tidak kerja") switchStep('step-12', 'step-10');
+            else if (surveyData.status_kerja_saat_ini === "Sudah beda sektor") switchStep('step-12', 'step-11a');
+            else if (surveyData.status_kerja_saat_ini === "Masih sama") switchStep('step-12', 'step-11b');
+        }
+
+        function countWords(inputId, counterId) {
+            const text = document.getElementById(inputId).value.trim(); const words = text ? text.split(/\s+/) : [];
+            const count = words.length, counterLabel = document.getElementById(counterId), errorLabel = document.getElementById(`err_${inputId}`);
+            counterLabel.innerText = `${count} / 100 kata`;
+            if (count > 100) { counterLabel.classList.replace('text-slate-700', 'text-red-500'); errorLabel.classList.remove('hidden'); } 
+            else { counterLabel.classList.replace('text-red-500', 'text-slate-700'); errorLabel.classList.add('hidden'); }
+        }
+
+        async function submitTestimoni() {
+            const t1 = document.getElementById('testi_1').value.trim();
+            const t2 = document.getElementById('testi_2').value.trim();
+            const t3 = document.getElementById('testi_3').value.trim();
+            const err = document.getElementById('error-testimoni');
+
+            if (!t1 || !t2 || !t3 || (t1.split(/\s+/).length>100) || (t2.split(/\s+/).length>100) || (t3.split(/\s+/).length>100)) {
+                err.classList.remove('hidden'); return;
+            }
+            err.classList.add('hidden');
+
+            const btnText = document.getElementById('btn-submit-text'), btnSpinner = document.getElementById('btn-submit-spinner'), btnSubmit = document.getElementById('btn-submit');
+            btnText.innerText = "Menyimpan Data..."; btnSpinner.classList.remove('hidden'); btnSubmit.disabled = true;
+
+            const payload = {
+                nik: surveyData.nik,
+                nama_siswa: surveyData.nama,
+                pend_ibu: surveyData.pendidikan_ibu,
+                pend_ayah: surveyData.pendidikan_ayah,
+                penerima_kjp: surveyData.terima_kjp,
+                penerima_kjmu: surveyData.terima_kjmu || null,
+                
+                // KJP
+                tahun_kjp: surveyData.tahun_kjp.length > 0 ? surveyData.tahun_kjp : null, 
+                jenjang: surveyData.jenjang_kjp || null,
+                tahun_jenjang: surveyData.tahun_mulai_sma || null,
+                lulus_jenjang: surveyData.tahun_lulus_sma || null,
+                
+                // PEKERJAAN PERTAMA (Ditambahin || null semua biar aman kalau di-skip)
+                tahun_awal_kerja: surveyData.tahun_kerja_pertama || null,
+                sektor_awal_kerja: surveyData.sektor_kerja || null,
+                penghasilan_awal: surveyData.gaji_pertama || null,
+                relevan_awal: surveyData.relevansi_kerja || null,
+                
+                // STATUS KERJA SAAT INI (Nama kolom dibenerin sesuai Supabase lu)
+                statuskerja_saatini: surveyData.status_kerja_saat_ini || null,
+                
+                // CABANG PEKERJAAN SAAT INI
+                penghasilansama_saatini: surveyData.gaji_sama || null,
+                statuskerja_saatini: (surveyData.status_kerja_saat_ini === "Sudah beda sektor" ? "Ya" : null), 
+                sektorlain_saatini: surveyData.sektor_baru || null,
+                penghasilanlain_saatini: surveyData.gaji_baru || null,
+                relevanlain_saatini: surveyData.relevansi_baru || null,
+                
+                // TESTIMONI
+                testimoni1: t1,
+                testimoni2: t2,
+                testimoni3: t3
+            };
+
+            try {
+                const { error } = await supabaseClient.from('penerima_kjp').insert([payload]);
+                if (error) throw error;
+                switchStep('step-12', 'step-end');
+            } catch (error) {
+                console.error("Gagal simpan:", error);
+                err.innerText = "Terjadi kesalahan database. Coba lagi.";
+                err.classList.remove('hidden');
+            } finally {
+                btnText.innerText = "Kirim Kuesioner"; btnSpinner.classList.add('hidden'); btnSubmit.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
